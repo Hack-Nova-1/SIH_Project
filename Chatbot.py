@@ -1,110 +1,112 @@
 import random
-import json
-import csv
+import joblib
+import pandas as pd
 from flask import Flask, request, jsonify
 
+# Import our custom analysis function from the other file
+from health_insights import analyze_life_expectancy
+
+# --- Initialize Flask App ---
 app = Flask(__name__)
 
 # --- Configuration ---
-USE_AI_MODEL = False  # Set to True to use AI model (OpenAI, Gemini, etc.)
-AI_API_KEY = None     # Put your API key here when ready
-
-# --- Knowledge base: dictionary of disease info (default) ---
-KNOWLEDGE_BASE = {
-    "malaria": "Malaria is a mosquito-borne disease. Symptoms include fever, chills, and headache. Prevention includes mosquito nets and antimalarial medicines.",
-    "flu": "Influenza (flu) is a viral illness causing fever, cough, sore throat, and fatigue. Annual vaccination helps prevent the flu.",
-    "covid": "COVID-19 is a respiratory illness caused by coronavirus. Main symptoms are fever, cough, and difficulty breathing. Prevention includes vaccination, masks, and hand-washing.",
-    "cholera": "Cholera is an acute diarrheal illness caused by infection of the intestine with Vibrio cholerae bacteria. Prevention includes clean water and sanitation."
-    # Add more diseases and information here
+PIPELINE_PATH = 'sih_pipeline.joblib'
+DATA_PATHS = {
+    "life_expectancy": "Health_Datasets/WHO/Life_Expectancy_Birth.csv"
 }
 
-RANDOM_RESPONSES = [
-    "Remember to wash your hands regularly to prevent disease.",
-    "Staying hydrated helps your immune system.",
-    "Vaccination is a key step in disease prevention.",
-    "Eat a balanced diet for good health.",
-    "Regular exercise boosts your overall wellness.",
-    "If you feel unwell, consult a healthcare professional.",
-    "Maintain proper hygiene to reduce disease transmission.",
-    "Get enough sleep for a stronger immune system.",
-    "Avoid close contact with sick individuals.",
-    "Stay informed about local health guidelines."
-]
+# --- Load ML Model and Data on Startup ---
+try:
+    pipeline = joblib.load(PIPELINE_PATH)
+    model = pipeline['model']
+    mlb = pipeline['mlb']
+    label_encoder = pipeline['label_encoder']
+    info_df = pipeline['info_df']
+    print("✅ Machine learning pipeline for symptom prediction loaded successfully!")
+except FileNotFoundError:
+    print(f"⚠️ WARNING: Could not find '{PIPELINE_PATH}'. Symptom prediction will not work.")
+    model = None
+except Exception as e:
+    print(f"⚠️ WARNING: An error occurred while loading the ML pipeline: {e}")
+    model = None
 
-def get_knowledge_base_reply(message):
-    lower_message = message.lower()
-    for disease in KNOWLEDGE_BASE:
-        if disease in lower_message:
-            return KNOWLEDGE_BASE[disease]
-    return None
+# --- Reusable Functions ---
 
-# --- Option to load knowledge base from JSON or CSV ---
-def load_knowledge_base_json(filepath):
-    global KNOWLEDGE_BASE
-    with open(filepath, 'r', encoding='utf-8') as f:
-        KNOWLEDGE_BASE = json.load(f)
+def predict_from_symptoms(symptoms: list) -> dict:
+    """Predicts disease from a list of symptoms using the loaded model."""
+    if not model:
+        return {"error": "Machine learning model is not available."}
 
-def load_knowledge_base_csv(filepath):
-    global KNOWLEDGE_BASE
-    new_kb = {}
-    with open(filepath, 'r', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            disease = row.get('disease', '').lower()
-            info = row.get('info', '')
-            if disease:
-                new_kb[disease] = info
-    KNOWLEDGE_BASE = new_kb
+    cleaned_symptoms = [s.strip().replace('_', ' ') for s in symptoms if s and s.strip()]
+    
+    try:
+        binary_input = mlb.transform([cleaned_symptoms])
+        input_df = pd.DataFrame(binary_input, columns=mlb.classes_)
+        prediction = model.predict(input_df)
+        disease = label_encoder.inverse_transform(prediction)[0]
 
-# Example: Uncomment one of the lines below to load a file at startup
-# load_knowledge_base_json('knowledge_base.json')
-# load_knowledge_base_csv('knowledge_base.csv')
-
-# --- Placeholder for AI Model integration ---
-def get_ai_model_reply(message):
-    # You will add your AI API logic here (OpenAI, Gemini, etc.)
-    # Example for OpenAI:
-    # import openai
-    # openai.api_key = AI_API_KEY
-    # response = openai.ChatCompletion.create(
-    #     model="gpt-3.5-turbo",
-    #     messages=[{"role": "user", "content": message}]
-    # )
-    # return response['choices'][0]['message']['content']
-    # For now, just return a placeholder response
-    return "AI model integration is not enabled yet. Please provide your API key and set USE_AI_MODEL = True."
-
-@app.route("/chat", methods=["POST"])
-def chat():
-    req = request.get_json()
-    user_message = req.get("message", "")
-
-    if USE_AI_MODEL and AI_API_KEY:
-        reply = get_ai_model_reply(user_message)
-    else:
-        kb_reply = get_knowledge_base_reply(user_message)
-        if kb_reply:
-            reply = kb_reply
+        if disease in info_df.index:
+            info = info_df.loc[disease]
+            description = info.get('Description', 'No description available.')
+            precautions = [p for p in info[['Precaution_1', 'Precaution_2', 'Precaution_3', 'Precaution_4']] if pd.notna(p)]
         else:
-            reply = random.choice(RANDOM_RESPONSES)
-    return jsonify({"reply": reply})
+            description, precautions = "No description available.", []
 
-@app.route("/", methods=["GET"])
+        return {
+            'type': 'disease_prediction',
+            'predicted_disease': disease,
+            'description': description,
+            'precautions': precautions
+        }
+    except Exception as e:
+        return {"error": f"Prediction failed. Some symptoms may not be recognized. Details: {e}"}
+
+# --- Main Chat Endpoint ---
+@app.route('/chat', methods=['POST'])
+def chat():
+    """Main endpoint to handle all chatbot communication."""
+    data = request.get_json()
+    user_message = data.get("message", "").lower()
+
+    # --- Intent Routing ---
+
+    # 1. Check for life expectancy query
+    if 'life expectancy' in user_message:
+        results = analyze_life_expectancy(DATA_PATHS["life_expectancy"])
+        if results:
+            response = {
+                'type': 'health_insight',
+                'text': (
+                    f"Based on data from {results['latest_year']}, life expectancy for females "
+                    f"in India is {results['female_le']} years and for males is {results['male_le']} years."
+                ),
+                'chart_data_url': f"data:image/png;base64,{results['chart_base64']}"
+            }
+        else:
+            response = {"error": "Could not retrieve life expectancy data."}
+        return jsonify(response)
+
+    # 2. Check for symptoms (comma-separated list)
+    elif ',' in user_message and model:
+        symptoms = [s.strip() for s in user_message.split(',')]
+        response = predict_from_symptoms(symptoms)
+        return jsonify(response)
+        
+    # 3. Fallback for everything else
+    else:
+        fallback_responses = [
+            "Hello! I am a health awareness chatbot. Ask me about 'life expectancy' or provide comma-separated symptoms (e.g., 'itching, skin rash') for a prediction.",
+            "I can provide health insights or predict a disease from symptoms. What would you like to know?",
+            "You can ask me a health question, or list some symptoms separated by commas."
+        ]
+        response = {'type': 'greeting', 'text': random.choice(fallback_responses)}
+        return jsonify(response)
+
+# --- Root Endpoint for Health Check ---
+@app.route('/')
 def index():
-    return (
-        "Public Health Chatbot backend is running with a knowledge base. "
-        "You can load knowledge from CSV or JSON, and enable AI integration when ready."
-    )
+    return "SIH Health Chatbot Backend is running!"
 
-@app.route("/random-fact", methods=["GET"])
-def random_fact():
-    facts = [
-        "Drinking water can boost your energy levels.",
-        "Regular exercise improves mental health.",
-        "Washing hands reduces the spread of disease.",
-        "Getting enough sleep is vital for your immune system.",
-        "Eating fruits and vegetables supports overall health."
-    ]
-    return jsonify({"fact": random.choice(facts)})
-if __name__ == "__main__":
-    app.run(debug=True)
+# --- Run the App ---
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
