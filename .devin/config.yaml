@@ -1,0 +1,11 @@
+project_root: .
+include:
+  - '**/*'
+tasks:
+  - integration
+  - bugfix
+webhook_url: "https://mgx-ipo12dwazbi.mgx.world/"
+backend:
+  enabled: true
+  path: "./"
+frontend_url: "https://mgx-ipo12dwazbi.mgx.world/"
