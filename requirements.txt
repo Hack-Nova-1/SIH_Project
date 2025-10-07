@@ -8,3 +8,5 @@ scipy
 flask
 json
 csv
+deep-translator
+gTTS
