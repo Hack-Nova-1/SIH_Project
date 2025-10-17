@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Text3D, Center } from '@react-three/drei';
+import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import AOS from 'aos';
@@ -378,8 +379,8 @@ const PlanCard3D: React.FC<{ plan: SubscriptionPlan, index: number }> = ({ plan,
         font="/fonts/helvetiker_regular.typeface.json"
         size={0.2}
         height={0.03}
-        color="#ffffff"
       >
+        <meshStandardMaterial color="#ffffff" />
         {plan.name}
       </Text3D>
       
@@ -389,8 +390,8 @@ const PlanCard3D: React.FC<{ plan: SubscriptionPlan, index: number }> = ({ plan,
         font="/fonts/helvetiker_regular.typeface.json"
         size={0.15}
         height={0.02}
-        color="#ffffff"
       >
+        <meshStandardMaterial color="#ffffff" />
         ${plan.price}
       </Text3D>
       

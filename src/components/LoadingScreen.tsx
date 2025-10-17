@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Text3D, Center } from '@react-three/drei';
+import * as THREE from 'three';
 import { gsap } from 'gsap';
 
 const LoadingScreen: React.FC = () => {

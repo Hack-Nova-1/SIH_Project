@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Text3D, Center, useGLTF } from '@react-three/drei';
+import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import AOS from 'aos';
@@ -259,7 +260,6 @@ const FloatingElement: React.FC<{ index: number }> = ({ index }) => {
         (Math.random() - 0.5) * 8,
         (Math.random() - 0.5) * 8
       ]}
-      className="floating-element"
     >
       {shape === 'sphere' && <sphereGeometry args={[0.1, 16, 16]} />}
       {shape === 'box' && <boxGeometry args={[0.2, 0.2, 0.2]} />}

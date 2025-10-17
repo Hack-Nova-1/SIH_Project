@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Text3D, Center, useGLTF } from '@react-three/drei';
+import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import AOS from 'aos';
@@ -373,8 +374,8 @@ const DoctorCard3D: React.FC<{ doctor: Doctor, index: number, total: number }> =
         font="/fonts/helvetiker_regular.typeface.json"
         size={0.3}
         height={0.05}
-        color="#ffffff"
       >
+        <meshStandardMaterial color="#ffffff" />
         {doctor.name}
       </Text3D>
       
@@ -384,8 +385,8 @@ const DoctorCard3D: React.FC<{ doctor: Doctor, index: number, total: number }> =
         font="/fonts/helvetiker_regular.typeface.json"
         size={0.2}
         height={0.03}
-        color="#D97DD9"
       >
+        <meshStandardMaterial color="#D97DD9" />
         {doctor.specialty}
       </Text3D>
       

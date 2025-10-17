@@ -4,6 +4,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, Effects } from '@react-three/drei';
 import { EffectComposer, Bloom, ChromaticAberration, Noise } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
+import * as THREE from 'three';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -61,11 +62,10 @@ function App() {
         <div className="canvas-container">
           <Canvas
             camera={{ position: [0, 0, 5], fov: 75 }}
-            gl={{ 
-              antialias: true, 
+            gl={{
+              antialias: true,
               alpha: true,
-              powerPreference: "high-performance",
-              physicallyCorrectLights: true
+              powerPreference: "high-performance"
             }}
             dpr={[1, 2]}
           >
@@ -92,7 +92,9 @@ function App() {
                     blendFunction={BlendFunction.ADD}
                   />
                   <ChromaticAberration
-                    offset={[0.001, 0.001]}
+                    offset={new THREE.Vector2(0.001, 0.001)}
+                    radialModulation={false}
+                    modulationOffset={0.15}
                     blendFunction={BlendFunction.NORMAL}
                   />
                   <Noise
