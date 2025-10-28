@@ -1,0 +1,276 @@
+/* Global Styles for Cure AI */
+:root {
+  --primary-purple: #7B2CBF;
+  --secondary-purple: #A47CF3;
+  --light-purple: #C8AFFF;
+  --lighter-purple: #D8C4FF;
+  --mint-blue: #EAF4F2;
+  --accent-green: #69C181;
+  --accent-pink: #D97DD9;
+  --dark-bg: #0a0a0a;
+  --darker-bg: #050505;
+  --text-light: #ffffff;
+  --text-muted: #cccccc;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(135deg, var(--dark-bg) 0%, #1a0a2e 50%, var(--darker-bg) 100%);
+  color: var(--text-light);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+.App {
+  position: relative;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at center, rgba(123, 44, 191, 0.1) 0%, transparent 70%);
+}
+
+.main-content {
+  position: relative;
+  z-index: 10;
+}
+
+.canvas-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+h1 {
+  font-size: 4rem;
+  background: linear-gradient(45deg, var(--light-purple), var(--accent-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 30px rgba(200, 175, 255, 0.5);
+}
+
+h2 {
+  font-size: 2.5rem;
+  color: var(--light-purple);
+  text-shadow: 0 0 20px rgba(200, 175, 255, 0.3);
+}
+
+h3 {
+  font-size: 1.8rem;
+  color: var(--secondary-purple);
+}
+
+/* Buttons */
+.btn-primary-3d {
+  background: linear-gradient(45deg, var(--primary-purple), var(--secondary-purple));
+  border: none;
+  padding: 15px 30px;
+  border-radius: 50px;
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(123, 44, 191, 0.3);
+  transform: translateZ(0);
+}
+
+.btn-primary-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary-3d:hover::before {
+  left: 100%;
+}
+
+.btn-primary-3d:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 15px 40px rgba(123, 44, 191, 0.5);
+}
+
+.btn-secondary-3d {
+  background: linear-gradient(45deg, var(--accent-green), #4CAF50);
+  border: none;
+  padding: 12px 25px;
+  border-radius: 50px;
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(105, 193, 129, 0.3);
+}
+
+.btn-secondary-3d:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 12px 35px rgba(105, 193, 129, 0.5);
+}
+
+/* Cards */
+.card-3d {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 30px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--light-purple), transparent);
+}
+
+.card-3d:hover {
+  transform: translateY(-10px) rotateX(5deg);
+  box-shadow: 0 20px 60px rgba(200, 175, 255, 0.2);
+  border-color: rgba(200, 175, 255, 0.3);
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(200, 175, 255, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(200, 175, 255, 0.6); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.float-animation {
+  animation: float 6s ease-in-out infinite;
+}
+
+.pulse-animation {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.glow-animation {
+  animation: glow 3s ease-in-out infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+  
+  h2 {
+    font-size: 2rem;
+  }
+  
+  .btn-primary-3d,
+  .btn-secondary-3d {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .card-3d {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 2rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dark-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, var(--primary-purple), var(--light-purple));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, var(--secondary-purple), var(--lighter-purple));
+}
+
+/* Loading States */
+.loading-shimmer {
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0.1) 25%, 
+    rgba(255, 255, 255, 0.2) 50%, 
+    rgba(255, 255, 255, 0.1) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Utility Classes */
+.text-gradient {
+  background: linear-gradient(45deg, var(--light-purple), var(--accent-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.neon-glow {
+  box-shadow: 0 0 20px rgba(200, 175, 255, 0.5);
+}
+
+.perspective-3d {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
